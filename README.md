@@ -11,5 +11,9 @@ TODO List:
  - Create a difficult AI
  - Create an AI that never loses
  - User option saving
- - Make everything look nicer
+ - Make everything look nicer (including a relevant icon)
  - Gamestate saving to protect against accidental clicks outside the popup
+
+
+If you'd like to try it out for yourself, see the "Load the extension" part of the guide below. It literally takes 10 seconds.
+https://developer.chrome.com/extensions/getstarted
