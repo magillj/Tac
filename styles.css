@@ -1,0 +1,28 @@
+/* Table Styles */
+#popup_container {
+    width: 250px;
+}
+
+.cell {
+    font-size: 35px;
+    height: 60px;
+    padding-left: 17px;
+    width: 43px;
+    vertical-align: middle;
+}
+
+.br {
+    border-right: 2px solid black;
+}
+
+.bl {
+    border-left: 2px solid black;
+}
+
+.bt {
+    border-top: 2px solid black;
+}
+
+.bb {
+    border-bottom: 2px solid black;
+}
