@@ -1,6 +1,35 @@
 /* Table Styles */
 #popup_container {
-    width: 250px;
+    width: 230px;
+}
+
+#options_container {
+    cursor: pointer;
+    margin: 55px 2px 2px 2px;
+    padding: 5px 5px 5px 55px;
+    background-color: rgba(153, 153, 153, 0.4);
+}
+
+#options_container:hover {
+    background-color: rgba(122, 122, 122, 0.4);
+}
+
+#options_container span {
+    margin-left: 20px;
+    position: relative;
+    bottom: 8px;
+}
+
+#tac_board {
+    margin-left: 18px;
+}
+
+body {
+    background-image: url("concrete_seamless.png");
+}
+
+h5 {
+    text-align: center;
 }
 
 .cell {
@@ -9,6 +38,10 @@
     padding-left: 17px;
     width: 43px;
     vertical-align: middle;
+}
+
+.cell.content_empty:hover {
+    background-color: #ADD6FF;
 }
 
 .br {
@@ -25,4 +58,9 @@
 
 .bb {
     border-bottom: 2px solid black;
+}
+
+.options_icon {
+    height: 30px;
+    width: 30px;
 }

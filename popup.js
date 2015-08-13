@@ -12,6 +12,11 @@ var GAME_CONSTANTS = {
         empty: 0,
         x: 1,
         o: -1
+    },
+    contentClasses: {
+        empty: "content_empty",
+        x: "content_x",
+        o: "content_o"
     }
 };
 
@@ -44,8 +49,17 @@ function parseId(id) {
     };
 }
 
+// Constructs a cell Id based on the row and column number of the cell
 function constructId (row, col) {
     return "cell_" + row + "_" + col;
+}
+
+// Sets the class corresponding to the content of the cell to contentClass
+function setContentClass (cellId, contentClass) {
+    $("#" + cellId).attr('class',
+        function(i, c){
+            return c.replace(/(^|\s)content_\S+/g, " " + contentClass);
+        });
 }
 
 // Gets the numerical sum of all the values in a column
@@ -66,6 +80,7 @@ function getRowValue(row) {
     return sum;
 }
 
+// Gets the numerical sum of all the values in the top left to bottom right diagonal
 function getDiagonalValue() {
     var sum = 0;
     for (var i = 0; i < gamestate.size; i++) {
@@ -74,6 +89,7 @@ function getDiagonalValue() {
     return sum;
 }
 
+// Gets the numerical sum of all the values in the bottom left to top right diagonal
 function getAntiDiagonalValue() {
     var sum = 0;
     for (var i = 0; i < gamestate.size; i++) {
@@ -173,6 +189,8 @@ function makeMove(row, col, playerSymbol) {
 
     if (!cell.innerHTML) {
         cell.innerHTML = playerSymbol;
+        setContentClass(cell.id, (playerSymbol === "X" ? GAME_CONSTANTS.contentClasses.x :
+                                                         GAME_CONSTANTS.contentClasses.o));
         gamestate.board[row][col] = playerSymbol === "X" ? GAME_CONSTANTS.values.x : GAME_CONSTANTS.values.o;
 
         return true;
@@ -201,6 +219,7 @@ function resetGame() {
     // Reset the board
     $(".cell").each(function() {
         $(this)[0].innerHTML = "";
+        setContentClass($(this)[0].id, GAME_CONSTANTS.contentClasses.empty);
     });
 }
 
@@ -228,7 +247,7 @@ function generateBoardOfThree() {
         var row = document.createElement("tr");
         for (var j = 0; j < 3; j++) {
             var cell = document.createElement("td");
-            cell.className = "cell " + styles[i][j];
+            cell.className = "cell " + GAME_CONSTANTS.contentClasses.empty + " " + styles[i][j];
             cell.id = constructId(i, j);
             row.appendChild(cell);
             cell.addEventListener('click', function(){
@@ -314,3 +333,8 @@ function makeAIMove() {
  port.onDisconnect = gameStateSave;
  */
 generateBoardOfThree();
+
+// Attach non-game related event handlers
+$("#options_container")[0].onclick = function() {
+    document.location.href = "options.html";
+};
