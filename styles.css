@@ -1,20 +1,16 @@
 /* Table Styles */
-#popup_container {
-    width: 230px;
-}
-
-#options_container {
+#options_button {
     cursor: pointer;
     margin: 55px 2px 2px 2px;
     padding: 5px 5px 5px 55px;
     background-color: rgba(153, 153, 153, 0.4);
 }
 
-#options_container:hover {
+#options_button:hover {
     background-color: rgba(122, 122, 122, 0.4);
 }
 
-#options_container span {
+#options_button span {
     margin-left: 20px;
     position: relative;
     bottom: 8px;
@@ -30,6 +26,11 @@ body {
 
 h5 {
     text-align: center;
+}
+
+.page_content {
+    height: 325px;
+    width: 230px;
 }
 
 .cell {

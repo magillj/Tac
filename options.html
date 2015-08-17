@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <title>Tac Options</title>
     <script src="jquery-2.1.4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <div id="options_container">
-        <label for="difficulty_select">Difficulty:</label>
-        <select id="difficulty_select">
-            <option value="easy">Easy</option>
-            <option value="difficult" disabled>Difficult</option>
-            <option value="impossible" disabled>Impossible</option>
-        </select>
+    <div class="page_content">
+        <div id="options_container">
+            <label for="difficulty_select">Difficulty:</label>
+            <select id="difficulty_select">
+                <option value="easy">Easy</option>
+                <option value="difficult">Difficult</option>
+                <option value="impossible" disabled>Impossible</option>
+            </select>
 
-        <button id="options_save">Save</button>
+            <button id="options_save">Save</button>
+        </div>
     </div>
 
     <script src="options.js"></script>

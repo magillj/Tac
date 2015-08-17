@@ -7,6 +7,7 @@
 
 // An object that keeps track of the game
 var gamestate;
+// Game Constants
 var GAME_CONSTANTS = {
     values: { // Player is assumed to be X, for now
         empty: 0,
@@ -18,6 +19,10 @@ var GAME_CONSTANTS = {
         x: "content_x",
         o: "content_o"
     }
+};
+// User specific settings. Load with default values initially
+var userSettings = {
+    difficulty: "difficult"
 };
 
 
@@ -297,11 +302,24 @@ function gameStateSave() {
     });
 }
 
+function loadUserSettings() {
+    chrome.storage.sync.get("difficulty", function (settings) {
+        // If the difficulty is not yet set, set it to easy
+        if (!settings.difficulty) {
+            chrome.storage.sync.set({
+                difficulty: "difficult"
+            });
+            settings.difficulty = "difficult";
+        }
+        userSettings.difficulty = settings.difficulty;
+    });
+}
+
 /////////////////////////////////////////////////////////////////////////
 /*                               AI                                    */
 /////////////////////////////////////////////////////////////////////////
 
-// Gets all hte empty cells on the board
+// Gets all the empty cells on the board
 function getAllEmptyCells() {
     var cellsList = [];
     $(".cell").each(function() {
@@ -312,15 +330,138 @@ function getAllEmptyCells() {
     return cellsList;
 }
 
+function getEmptyCellColInRow(row) {
+    for (var i = 0; i < gamestate.size; i++) {
+        if (gamestate.board[row][i] == GAME_CONSTANTS.values.empty) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function getEmptyCellRowInCol(col) {
+    for (var i = 0; i < gamestate.size; i++) {
+        if (gamestate.board[i][col] == GAME_CONSTANTS.values.empty) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Gets the empty cell in the top left to bottom right diagonal, returning its coordinates. Otherwise returns null
+function getEmptyCellCoordsInDiag() {
+    for (var i = 0; i < gamestate.size; i++) {
+        if (gamestate.board[i][i] == GAME_CONSTANTS.values.empty) {
+            return { row: i, col: i};
+        }
+    }
+    return null;
+}
+
+// Gets the empty cell in the bottom left to top right diagonal, returning its coordinates. Otherwise returns null
+function getEmptyCellCoordsInAntiDiag() {
+    for (var i = 0; i < gamestate.size; i++) {
+        if (gamestate.board[i][gamestate.size - 1 - i] == GAME_CONSTANTS.values.empty) {
+            return { row: i, col: gamestate.size - 1 - i};
+        }
+    }
+    return null;
+}
+
 function makeAIMove() {
     // TODO: Base this off a difficulty setting
 
-    // Randomly select an open spot to move (this is going to the easiest difficulty)
+    var coordinates; // The coordinates of the move
+    if (userSettings.difficulty == "easy") {
+        // Just move randomly
+        coordinates = aIRandomMove();
+    } else if (userSettings.difficulty == "difficult") {
+        // Make any obvious move, otherwise move randomly
+        coordinates = aIEssentialMove();
+        if (!coordinates) {
+            coordinates = aIRandomMove();
+        }
+    } else if (userSettings.difficulty == "impossible") {
+        // Make any obvious move, otherwise make move based off strategy. Leave nothing to chance
+        coordinates = aIEssentialMove();
+        if (!coordinates) {
+            // Strategy to be determined. Will likely be limited to board size of 3, at least at first
+            coordinates = aIRandomMove(); // This line is temporary to ensure functionality
+        }
+    }
+
+    // Resume the game engine
+    processGameStatus(coordinates.row, coordinates.col);
+}
+
+// Make the AI move on a random, available spot and return the coordinates of that spot
+function aIRandomMove() {
     var emptyCells = getAllEmptyCells();
     var coordinates = parseId(emptyCells[getRandomInt(0,emptyCells.length)].id);
     makeMove(coordinates.row, coordinates.col, "O");
+    return coordinates;
+}
 
-    processGameStatus(coordinates.row, coordinates.col);
+// Make the "essential" or "obvious" move if it exists (winning itself, blocking player win). Returns the coordinates
+// of the move, returns null if there's no "essential" move.
+// As of now, prioritizes: antidiagonal > diagonal > rightmost columns > rightmost rows
+function aIEssentialMove() {
+    // TODO: Modify for efficiency, exiting the process once a win coordinate has been found
+    // TODO: Shorten by refactoring
+
+    var winCoords = { row: -1, col: -1};
+    var blockCoords = { row: -1, col: -1};
+
+    // Search the rows/cols for a win/block move
+    for (var i = 0; i < gamestate.size; i++) {
+        var rowValue = getRowValue(i);
+        var colValue = getColumnValue(i);
+
+        if (rowValue == (gamestate.size - 1) * GAME_CONSTANTS.values.o) {
+            winCoords.row = i;
+            winCoords.col = getEmptyCellColInRow(i);
+        } else if (rowValue == (gamestate.size - 1) * GAME_CONSTANTS.values.x) {
+            blockCoords.row = i;
+            blockCoords.col = getEmptyCellColInRow(i);
+        }
+
+        if (colValue == (gamestate.size - 1) * GAME_CONSTANTS.values.o) {
+            winCoords.row = getEmptyCellRowInCol(i);
+            winCoords.col = i;
+        } else if (colValue == (gamestate.size - 1) * GAME_CONSTANTS.values.x) {
+            blockCoords.row = getEmptyCellRowInCol(i);
+            blockCoords.col = i;
+        }
+    }
+
+    // Search the diagonal
+    var diagValue = getDiagonalValue();
+    if (diagValue == (gamestate.size - 1) * GAME_CONSTANTS.values.o) {
+        winCoords = getEmptyCellCoordsInDiag();
+    } else if (diagValue == (gamestate.size - 1) * GAME_CONSTANTS.values.x) {
+        blockCoords = getEmptyCellCoordsInDiag();
+    }
+
+    // Search the anti diagonal
+    var antiDiagValue = getAntiDiagonalValue();
+    if (antiDiagValue == (gamestate.size - 1) * GAME_CONSTANTS.values.o) {
+        winCoords = getEmptyCellCoordsInAntiDiag();
+    } else if (antiDiagValue == (gamestate.size - 1) * GAME_CONSTANTS.values.x) {
+        blockCoords = getEmptyCellCoordsInAntiDiag();
+    }
+
+    // Examine the results, prioritizing winning over blocking
+    if (winCoords.row != -1 && winCoords.col != -1) {
+        makeMove(winCoords.row, winCoords.col, "O");
+        return winCoords;
+    }
+
+    if (blockCoords.row != -1 && blockCoords.col != -1) {
+        makeMove(blockCoords.row, blockCoords.col, "O");
+        return blockCoords;
+    }
+
+    return null;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -332,9 +473,10 @@ function makeAIMove() {
 
  port.onDisconnect = gameStateSave;
  */
+loadUserSettings();
 generateBoardOfThree();
 
 // Attach non-game related event handlers
-$("#options_container")[0].onclick = function() {
+$("#options_button")[0].onclick = function() {
     document.location.href = "options.html";
 };
