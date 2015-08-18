@@ -2,8 +2,7 @@ function saveOptions() {
     chrome.storage.sync.set({
         difficulty: $("#difficulty_select").val()
     }, function() {
-        alert("Your settings have been updated");
-        document.location.href = "popup.html";
+        $("#options_modal").show();
     });
 }
 
@@ -22,4 +21,14 @@ function loadOptions() {
 
 // Run on eval
 loadOptions();
+
+$("#btn_options_return").on('click',  function() {
+    $("#options_modal").hide();
+    document.location.href = "popup.html";
+});
+
+$("#btn_options_stay").on('click', function() {
+    $("#options_modal").hide();
+});
+
 $("#options_save").on('click', saveOptions);

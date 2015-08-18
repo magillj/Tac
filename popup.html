@@ -7,17 +7,17 @@
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-<!-- Modal -->
-<div id="openModal" class="modalDialog">
-    <div>
-        <h2>You Win!</h2>
-        <p>Would you like to play again?</p>
+    <!-- Modal -->
+    <div id="game_over_modal" class="modalDialog">
         <div>
-            <button class="modalButton">Yes</button>
-            <button class="modalButton">No</button>
+            <h2>You Win!</h2>
+            <p>Would you like to play again?</p>
+            <div>
+                <button id="btn_play_again" class="modalButton">Yes</button>
+                <button id="btn_end_game" class="modalButton">No</button>
+            </div>
         </div>
     </div>
-</div>
 
     <div class="page_content">
         <div id="popup_container">
@@ -30,8 +30,6 @@
                 <span>Options</span>
             </div>
         </div>
-
-
     </div>
 
     <script src="popup.js"></script>

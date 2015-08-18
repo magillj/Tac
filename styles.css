@@ -16,6 +16,10 @@
     bottom: 8px;
 }
 
+#options_modal > div {
+    margin-top: 45%;
+}
+
 #tac_board {
     margin-left: 18px;
 }
@@ -40,13 +44,12 @@ h5 {
     right: 0;
     bottom: 0;
     left: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 99999;
-    opacity:0;
+    display: none;
+    z-index: 99;
+    background: rgba(0,0,0,0.6);
     -webkit-transition: opacity 400ms ease-in;
     -moz-transition: opacity 400ms ease-in;
     transition: opacity 400ms ease-in;
-    pointer-events: none;
 }
 
 .modalDialog:target {
@@ -57,7 +60,7 @@ h5 {
 .modalDialog > div {
     color: white;
     position: relative;
-    margin-top: 42%;
+    margin-top: 95%;
     padding: 5px 20px 13px 20px;
     background: #07a;
 }
@@ -67,6 +70,7 @@ h5 {
     border: 2px solid white;
     color: white;
     cursor: pointer;
+    outline: none;
     padding: 3px 6px;
     width: 70px;
 }

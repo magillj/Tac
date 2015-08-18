@@ -230,12 +230,8 @@ function resetGame() {
 
 // Finishes the current game by displaying the game status and resetting the game if they want to play again
 function endGame(winnerMessage) {
-    //$("#openModal").fadeTo(0.5, 1);
-    if (confirm(winnerMessage + " Play again?")) {
-        resetGame();
-    } else {
-        gamestate.active = false;
-    }
+    $("#game_over_modal").show();
+    gamestate.active = false;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -638,7 +634,16 @@ function aIBoardOf3SecondMoveStrategy() {
 loadUserSettings();
 generateBoardOfThree();
 
-// Attach non-game related event handlers
-$("#options_button")[0].onclick = function() {
+// Attach event handlers
+$("#options_button").on('click', function() {
     document.location.href = "options.html";
-};
+});
+
+$("#btn_play_again").on('click', function() {
+    $("#game_over_modal").hide();
+    resetGame();
+});
+
+$("#btn_end_game").on('click', function() {
+    $("#game_over_modal").hide();
+});
