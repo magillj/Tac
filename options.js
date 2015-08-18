@@ -32,3 +32,7 @@ $("#btn_options_stay").on('click', function() {
 });
 
 $("#options_save").on('click', saveOptions);
+
+$("#btn_options_back").on('click', function() {
+    document.location.href = "popup.html";
+});
