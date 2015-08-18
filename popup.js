@@ -230,6 +230,7 @@ function resetGame() {
 
 // Finishes the current game by displaying the game status and resetting the game if they want to play again
 function endGame(winnerMessage) {
+    //$("#openModal").fadeTo(0.5, 1);
     if (confirm(winnerMessage + " Play again?")) {
         resetGame();
     } else {
@@ -368,9 +369,116 @@ function getEmptyCellCoordsInAntiDiag() {
     return null;
 }
 
-function makeAIMove() {
-    // TODO: Base this off a difficulty setting
+function getCorners() {
+    var corners = [];
+    corners.push({
+        row: 0,
+        col: 0,
+        val: gamestate.board[0][0]
+    });
+    corners.push({
+        row: 0,
+        col: gamestate.size - 1,
+        val: gamestate.board[0][gamestate.size - 1]
+    });
+    corners.push({
+        row: gamestate.size - 1,
+        col: 0,
+        val: gamestate.board[gamestate.size - 1][0]
+    });
+    corners.push({
+        row: gamestate.size - 1,
+        col: gamestate.size - 1,
+        val: gamestate.board[gamestate.size - 1][gamestate.size - 1]
+    });
+    return corners;
+}
 
+// Edges only exist on the 3 x 3 board and are cells that share a border with the middle cell
+function getEdges() {
+    var edges = [];
+    edges.push({
+        row: 0,
+        col: 1,
+        val: gamestate.board[0][1]
+    });
+    edges.push({
+        row: 1,
+        col: 0,
+        val: gamestate.board[1][0]
+    });
+    edges.push({
+        row: 1,
+        col: 2,
+        val: gamestate.board[1][2]
+    });
+    edges.push({
+        row: 2,
+        col: 1,
+        val: gamestate.board[2][1]
+    });
+    return edges;
+}
+
+// Returns the coordinates of a random empty cell in the list cellRowColVals. If there are none, returns null
+function getRandomEmptyCellCoords(cellRowColVals) {
+    var emptyCells = [];
+    for (var i = 0; i < cellRowColVals.length; i++) {
+        if (cellRowColVals[i].val == GAME_CONSTANTS.values.empty) {
+            emptyCells.push(cellRowColVals[i]);
+        }
+    }
+    if (emptyCells) {
+        var rand = getRandomInt(0, emptyCells.length);
+        return {
+            row: emptyCells[rand].row,
+            col: emptyCells[rand].col
+        }
+    }
+    return null;
+}
+
+// Gets the number of corner cells the player owns
+function getNumPlayerCorners() {
+    var sum = 0;
+    var corners = getCorners();
+    for (var i = 0; i < corners.length; i++) {
+        if (corners[i].val == GAME_CONSTANTS.values.x) {
+            sum ++;
+        }
+    }
+    return sum;
+}
+
+// Gets the coordinates of a random, empty corner on the board. Returns null if no empty corners
+function getRandomEmptyCornerCoords() {
+    return getRandomEmptyCellCoords(getCorners());
+}
+
+// Gets the coordinates of a random, empty edge on the board. Returns null if no such edge exists
+function getRandomEmptyEdgeCoords() {
+    return getRandomEmptyCellCoords(getEdges());
+}
+
+// If the player has two edge spots that both border a corner, return the coords of that corner. Otherwise, return null
+function getCornerBetweenAdjescentEdgesCoords() {
+    var edges = getEdges();
+    if (edges && edges.length == 2) {
+        // We know both edges border the same corner cell if their row's are 1 off from each other
+        if (Math.abs(edges[0].row - edges[1].row) == 1) {
+            var row = edges[0].row != 1 ? edges[0].row : edges[1].row;
+            var col = edges[0].col != 1 ? edges[0].col : edges[1].col;
+            return {
+                row: row,
+                col: col,
+                val: gamestate.board[row][col]
+            }
+        }
+    }
+    return null;
+}
+
+function makeAIMove() {
     var coordinates; // The coordinates of the move
     if (userSettings.difficulty == "easy") {
         // Just move randomly
@@ -385,8 +493,8 @@ function makeAIMove() {
         // Make any obvious move, otherwise make move based off strategy. Leave nothing to chance
         coordinates = aIEssentialMove();
         if (!coordinates) {
-            // Strategy to be determined. Will likely be limited to board size of 3, at least at first
-            coordinates = aIRandomMove(); // This line is temporary to ensure functionality
+            // Strategy limited to 3x3 board with the AI going second
+            coordinates = aIBoardOf3SecondMoveStrategy();
         }
     }
 
@@ -462,6 +570,60 @@ function aIEssentialMove() {
     }
 
     return null;
+}
+
+// Uses strategy to make the best move possible assuming the board is 3 x 3 and the AI goes after the player
+// More designed towards never losing than always winning, since the person going first has the advantage
+// Assumes the obvious move (win or block the players win) does not exist
+/*
+    Strategy
+
+     - If it's the AI's first move...
+        * If the player takes the middle spot, take a corner
+        * If the player takes a corner, take the middle
+        * If the player takes an edge (cell bordering middle cell), take the middle
+     - Otherwise...
+        * If the player has taken the middle and the corner opposite the one the AI took, take another corner
+        * Move randomly TODO: Fill this in with an offensive strategy
+ */
+function aIBoardOf3SecondMoveStrategy() {
+    if (gamestate.size != 3) {
+        throw "Improper AI strategy has been selected";
+    }
+
+    var moveCoords;
+
+    // If this is the first AI move
+    if (getAllEmptyCells().length == (gamestate.size * gamestate.size) - 1) {
+        if (gamestate.board[1][1] == GAME_CONSTANTS.values.x) {
+            moveCoords = getRandomEmptyCornerCoords();
+        } else {
+            moveCoords = {
+                row: 1,
+                col: 1
+            }
+        }
+    } else {
+        var numPlayerCorners = getNumPlayerCorners();
+        if (gamestate.board[1][1] == GAME_CONSTANTS.x && numPlayerCorners == 1) {
+            moveCoords = getRandomEmptyCornerCoords();
+        } else if(numPlayerCorners == 2) {
+            moveCoords = getRandomEmptyEdgeCoords();
+        } else {
+            var corner = getCornerBetweenAdjescentEdgesCoords();
+            if (corner && corner.val == GAME_CONSTANTS.values.empty) {
+                moveCoords = {
+                    row: corner.row,
+                    col: corner.col
+                }
+            } else {
+                moveCoords = aIRandomMove();
+            }
+        }
+    }
+
+    makeMove(moveCoords.row, moveCoords.col, "o");
+    return moveCoords;
 }
 
 /////////////////////////////////////////////////////////////////////////
