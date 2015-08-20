@@ -8,7 +8,7 @@ function saveOptions() {
 
 function loadOptions() {
     chrome.storage.sync.get("difficulty", function (settings) {
-        // If the difficulty is not yet set, set it to easy
+        // If the difficulty is not yet set, set it to difficult
         if (!settings.difficulty) {
             chrome.storage.sync.set({
                 difficulty: "difficult"

@@ -113,10 +113,10 @@ function checkSum(sum) {
 
     if (sum == GAME_CONSTANTS.values.x * 3) {
         output.isWinner = true;
-        output.message = "X has won";
+        output.message = "You win!";
     } else if (sum == GAME_CONSTANTS.values.o * 3) {
         output.isWinner = true;
-        output.message = "O has won";
+        output.message = "Computer wins.";
     }
 
     return output;
@@ -166,7 +166,7 @@ function checkGameOver(lastRow, lastCol) {
     if (draw) {
         return {
             isWinner: false,
-            message: "The game is a draw!"
+            message: "Draw!"
         }
     }
 
@@ -231,6 +231,7 @@ function resetGame() {
 // Finishes the current game by displaying the game status and resetting the game if they want to play again
 function endGame(winnerMessage) {
     $("#game_over_modal").show();
+    $("#game_over_message").html(winnerMessage);
     gamestate.active = false;
 }
 
@@ -301,7 +302,7 @@ function gameStateSave() {
 
 function loadUserSettings() {
     chrome.storage.sync.get("difficulty", function (settings) {
-        // If the difficulty is not yet set, set it to easy
+        // If the difficulty is not yet set, set it to difficult
         if (!settings.difficulty) {
             chrome.storage.sync.set({
                 difficulty: "difficult"
@@ -479,6 +480,14 @@ function makeAIMove() {
     if (userSettings.difficulty == "easy") {
         // Just move randomly
         coordinates = aIRandomMove();
+    } else if (userSettings.difficulty == "normal") {
+        // Make the essential move 60% of the time
+        if (getRandomInt(0,5) < 3) {
+            coordinates = aIEssentialMove();
+        }
+        if (!coordinates) {
+            coordinates = aIRandomMove();
+        }
     } else if (userSettings.difficulty == "difficult") {
         // Make any obvious move, otherwise move randomly
         coordinates = aIEssentialMove();
